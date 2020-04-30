@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      MET
 // 
-/**\class MET MET.cc Analysis/Tools/src/MET.cc
+/**\class xxx MET.cc Analysis/Tools/src/MET.cc
 
  Description: [one line class summary]
 

@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      RecoMuon
 // 
-/**\class RecoMuon RecoMuon.cc Analysis/Tools/src/RecoMuon.cc
+/**\class xxx RecoMuon.cc Analysis/Tools/src/RecoMuon.cc
 
  Description: [one line class summary]
 

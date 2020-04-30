@@ -1,1 +1,2 @@
-/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016G-PromptReco-v1/161004_083350/0000/ntuple_1.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/MC/Autumn18/ntuplizer_102X_mc_2018_autumn18-v3/QCD_Pt-120to170_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/200405_204851/0000/ntuple_1.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/MC/Autumn18/ntuplizer_102X_mc_2018_autumn18-v3/QCD_Pt-120to170_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/200405_204851/0000/ntuple_2.root

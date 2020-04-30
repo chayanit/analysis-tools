@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      RecoTrack
 // 
-/**\class RecoTrack RecoTrack.cc Analysis/Tools/src/RecoTrack.cc
+/**\class xxx RecoTrack.cc Analysis/Tools/src/RecoTrack.cc
 
  Description: [one line class summary]
 

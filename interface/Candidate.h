@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      Candidate
 //
-/**\class Candidate Candidate.cc Analysis/Tools/src/Candidate.cc
+/**\class xxx Candidate.h Analysis/Tools/interface/Candidate.h
 
  Description: [one line class summary]
 

@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ( $#argv < 4 ) then
-   echo Need to give sample name, the macro name, the config file name and the number of splits, optional json
+   echo Need to give the sample name, the macro name, the config file name, and the number of files per job, optional json
    exit
 endif
 
@@ -17,7 +17,7 @@ endif
 
 set json = $5
 
-set maindir = "NAF_"$macro"_"`basename $config .cfg`
+set maindir = "Condor_"$macro"_"`basename $config .cfg`
 
 if ( -d $maindir ) then
    echo "$maindir exist, rename or remove it and then resubmit" 
@@ -50,7 +50,7 @@ foreach file ( $files )
    if ( $json != "" ) then
       cp -p ../../$json .
    endif
-   qsub.sh "job_"$counter $macro `basename $config`
+   condor_submit.csh "job_"$counter $macro `basename $config`
    sleep 0.2
    cd -
 end

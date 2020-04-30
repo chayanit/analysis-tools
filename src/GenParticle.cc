@@ -1,16 +1,3 @@
-/**\class GenParticle GenParticle.cc Analysis/Tools/src/GenParticle.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Roberval Walsh Bastos Rangel
-//         Created:  Mon, 09 Sep 2015 09:24:08 GMT
-//
-//
-
 // system include files
 // 
 // user include files
@@ -37,6 +24,12 @@ GenParticle::GenParticle() : Candidate()
 GenParticle::GenParticle(const float & pt, const float & eta, const float & phi, const float & e, const float & q) : 
       Candidate(pt,eta,phi,e,q) 
 {
+   indx_ = -1;
+   mo_[0] = -1;
+   mo_[1] = -1;
+   da_[0] = -1;
+   da_[1] = -1;
+   
 }
 GenParticle::~GenParticle()
 {

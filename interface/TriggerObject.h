@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      TriggerObject
 //
-/**\class TriggerObject TriggerObject.cc Analysis/Tools/src/TriggerObject.cc
+/**\class xxx TriggerObject.cc Analysis/Tools/src/TriggerObject.cc
 
  Description: [one line class summary]
 

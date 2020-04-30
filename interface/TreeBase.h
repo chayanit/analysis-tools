@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      TreeBase
 // 
-/**\class TreeBase TreeBase.cc Analysis/Tools/src/TreeBase.cc
+/**\class xxx TreeBase.cc Analysis/Tools/src/TreeBase.cc
 
  Description: [one line class summary]
 

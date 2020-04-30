@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      GenJet
 // 
-/**\class GenJet GenJet.cc Analysis/Tools/src/GenJet.cc
+/**\class xxx GenJet.cc Analysis/Tools/src/GenJet.cc
 
  Description: [one line class summary]
 

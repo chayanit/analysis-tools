@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      L1TJet
 // 
-/**\class L1TJet L1TJet.cc Analysis/Tools/src/L1TJet.cc
+/**\class xxx L1TJet.cc Analysis/Tools/src/L1TJet.cc
 
  Description: [one line class summary]
 

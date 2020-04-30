@@ -1,16 +1,3 @@
-/**\class Collection Collection.cc Analysis/Tools/src/Collection.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Roberval Walsh Bastos Rangel
-//         Created:  Mon, 20 Oct 2014 14:24:08 GMT
-//
-//
-
 // system include files
 #include <iostream>
 #include <set>
@@ -46,6 +33,7 @@ namespace analysis {
       template <> void Collection<Jet>::associatePartons( const std::shared_ptr<Collection<GenParticle> > & particles, const float & deltaR, const float & ptMin, const bool & pythia8  );
       template <> void Collection<Jet>::btagAlgo( const std::string & algo );
       template <> void Collection<Jet>::smearTo(const Collection<Jet> & collection, const double & n_sigma );
+      template <> void Collection<Jet>::addGenJets( const std::shared_ptr<Collection<GenJet> > & cands );
    }
 }
 //
@@ -121,6 +109,23 @@ void Collection<Jet>::btagAlgo(const std::string & algo  )
    for ( auto & jet : objects_ )
       jet.btagAlgo(algo);
 }
+
+
+template <class Object>
+void Collection<Object>::addGenJets(const std::shared_ptr<Collection<GenJet> > & cands)
+{
+}
+
+template <>
+void Collection<Jet>::addGenJets(const std::shared_ptr<Collection<GenJet> > & cands)
+{
+   if ( objects_.size() < 1 ) return;
+   std::vector< std::shared_ptr<GenJet> > vec = cands->vector();
+   for ( auto & jet : objects_ )
+      jet.genJets(vec);
+   
+}
+
 
 template <class Object>
 void Collection<Object>::associatePartons(const std::shared_ptr<Collection<GenParticle> > & particles, const float & deltaR, const float & ptMin, const bool & pythia8  )
@@ -210,7 +215,7 @@ void Collection<Object>::matchTo( const Collection<Candidate> & collection, cons
 template <>
 void Collection<Jet>::matchTo( const Collection<Jet> & collection, const float & delta_pT, const float & deltaR){
 	for (auto & obj : objects_){
-		obj.matchTo(collection.vectorCandidates(),collection.name(),delta_pT*obj.JerResolution()*obj.pt(),deltaR);
+		obj.matchTo(collection.vectorCandidates(),collection.name(),delta_pT*obj.jerPtResolution()*obj.pt(),deltaR);
 	}
 }
 
@@ -244,10 +249,10 @@ void Collection<Jet>::smearTo( const Collection<Jet> & collection, const double 
 	double sf = 0;
 	for(auto & jet : objects_){
 		if(n_sigma >= 0){
-			sf = n_sigma * (jet.JerSfUp() - jet.JerSf()) +  jet.JerSf();
+			sf = n_sigma * (jet.jerSFup() - jet.jerSF()) +  jet.jerSF();
 		}
 		else if (n_sigma < 0){
-			sf = std::abs(n_sigma) * (jet.JerSfDown() - jet.JerSf()) +  jet.JerSf();
+			sf = std::abs(n_sigma) * (jet.jerSFdown() - jet.jerSF()) +  jet.jerSF();
 		}
 //		std::cout<<"\nBefore smearing: "<<jet.px()<<" "<<jet.py()<<" "<<jet.pt()<<std::endl;
 		if(jet.matched(collection.name())){
@@ -260,8 +265,8 @@ void Collection<Jet>::smearTo( const Collection<Jet> & collection, const double 
 		}
 		else {
 			if(sf > 1) {
-				smear_pt = gRandom->Gaus(jet.pt(),std::sqrt(sf*sf-1)*jet.JerResolution()*jet.pt());
-				smear_e = gRandom->Gaus(jet.e(),std::sqrt(sf*sf-1)*jet.JerResolution()*jet.pt());
+				smear_pt = gRandom->Gaus(jet.pt(),std::sqrt(sf*sf-1)*jet.jerPtResolution()*jet.pt());
+				smear_e = gRandom->Gaus(jet.e(),std::sqrt(sf*sf-1)*jet.jerPtResolution()*jet.pt());
 			}
 			else {
 				smear_pt = jet.pt();

@@ -1,2 +1,0 @@
-/nfs/dust/cms/user/walsh/tmp/test_mc_hbbM300_1.root
-/nfs/dust/cms/user/walsh/tmp/test_mc_hbbM300_2.root

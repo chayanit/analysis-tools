@@ -27,7 +27,8 @@
 #include "Analysis/Tools/interface/utilLib.h"
 
 namespace analysis {
-
+namespace tools {
+   
 template<typename T, typename std::enable_if< std::is_base_of<RooCurve, T>::value ||
 											std::is_base_of<RooHist, T>::value, T >::type* = nullptr>
 								T* GetFromRooPlot(RooPlot& frame, const std::string& object_name){
@@ -68,6 +69,7 @@ template<typename T> T* GetRooObjectFromTFile( const std::string& file_name, con
 	return obj;
 }
 
+}
 } /* namespace analysis */
 
 

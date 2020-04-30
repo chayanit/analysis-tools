@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      Collection
 // 
-/**\class Collection Collection.cc Analysis/Tools/src/Collection.cc
+/**\class xxx Collection.h Analysis/Tools/interface/Collection.h
 
  Description: [one line class summary]
 
@@ -28,6 +28,7 @@
 #include "Analysis/Tools/interface/Jet.h"
 #include "Analysis/Tools/interface/TriggerObject.h"
 #include "Analysis/Tools/interface/GenParticle.h"
+#include "Analysis/Tools/interface/GenJet.h"
 
 //
 // class declaration
@@ -66,6 +67,7 @@ namespace analysis {
            std::string name() const;
            
            void associatePartons(const std::shared_ptr<Collection<GenParticle> > & , const float & deltaR = 0.4, const float & ptMin = 1., const bool & pythia8 = true);
+           void addGenJets(const std::shared_ptr<Collection<GenJet> > &);
            void btagAlgo(const std::string &);           
             // ----------member data ---------------------------
          protected:

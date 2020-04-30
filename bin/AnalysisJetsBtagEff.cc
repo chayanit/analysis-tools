@@ -61,7 +61,7 @@ int main(int argc, char * argv[])
          std::cout << "id loose = "      << jet.idLoose() << ", ";
          std::cout << "flavour = "       << jet.flavour() << ", ";
          std::cout << "extFlavour = "    << jet.extendedFlavour() << ", ";
-         std::cout << "btag = "    << jet.btag()    << std::endl;
+         std::cout << "btag = "    << jet.btag("btag_csvivf")    << std::endl;
          std::cout << "efficiency = "  << analysis.btagEfficiency(jet) << std::endl;
          
       }

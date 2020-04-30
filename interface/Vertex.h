@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      Vertex
 // 
-/**\class Vertex Vertex.cc Analysis/Tools/src/Vertex.cc
+/**\class xxx Vertex.cc Analysis/Tools/src/Vertex.cc
 
  Description: Reconstructed Vertex
 

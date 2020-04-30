@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      JetTag
 // 
-/**\class JetTag JetTag.cc Analysis/Tools/src/JetTag.cc
+/**\class xxx JetTag.cc Analysis/Tools/src/JetTag.cc
 
  Description: [one line class summary]
 

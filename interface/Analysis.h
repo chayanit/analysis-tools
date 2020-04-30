@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      Analysis
 //
-/**\class Analysis Analysis.cc Analysis/Tools/src/Analysis.cc
+/**\class xxx Analysis.h Analysis/Tools/interface/Analysis.h
 
  Description: [one line class summary]
 
@@ -40,10 +40,19 @@
 
 #include "Analysis/Tools/interface/PhysicsObjectTree.h"
 #include "Analysis/Tools/interface/Collection.h"
+#include "Analysis/Tools/interface/BTagCalibrationStandalone.h"
+#include "Analysis/Tools/interface/PileupWeight.h"
+#include "Analysis/Tools/interface/MuonIdWeight.h"
+
+
+//#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+//#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 //
 // class declaration
 //
+
+using namespace JME;
 
 namespace analysis {
    namespace tools {
@@ -56,6 +65,9 @@ namespace analysis {
             // Info
             void tag(const std::string &);
             std::string tag();
+            
+            /// seed for random number generator read from a txt file given as a parameter
+            int seed(const std::string &);
 
             // Event
             int  numberEvents();
@@ -80,6 +92,9 @@ namespace analysis {
             double genScale();
             PDF    pdf();
             
+            /// fixedGridRhoAll
+            double rho();
+            
 
             // Trees
             template<class Object>
@@ -103,7 +118,7 @@ namespace analysis {
             std::string defaultCollection();
             
             // Cross sections
-            void   crossSections(const std::string & path);
+            int    crossSections(const std::string & path);
             double crossSection();
             double crossSection(const std::string & title);
             void   listCrossSections();
@@ -113,7 +128,7 @@ namespace analysis {
             double luminosity(const std::string & title);
 
             // Trigger results
-            void triggerResults(const std::string & path);
+            bool triggerResults(const std::string & path);
             bool triggerResult(const std::string & trig);
             int triggerPrescale(const std::string & trig);
             std::map<std::string,int> triggerPrescale(const std::vector<std::string> & trigs);
@@ -141,9 +156,21 @@ namespace analysis {
             void  btagEfficienciesAlgo(const std::string & );
             void  btagEfficienciesFlavour(const std::string & );
             
+            std::shared_ptr<JetResolutionInfo> jetResolutionInfo(const std::string &, const std::string & );
+            
+            std::shared_ptr<BTagCalibrationReader> btagCalibration(const std::string & tagger,
+                                 const std::string & filename,
+                                 const std::string & wp,
+                                 const std::string & sysType="central",
+                                 const std::vector<std::string> & otherSysTypes={"up", "down"});
+            
+            
+            std::shared_ptr<BTagCalibrationReader> btagCalibration();
             
             float scaleLuminosity(const float & lumi);  // in pb-1
 
+            std::shared_ptr<PileupWeight> pileupWeights(const std::string & );
+            std::shared_ptr<MuonIdWeight> muonIDWeights(const std::string & );
 
             // ----------member data ---------------------------
          protected:
@@ -160,6 +187,17 @@ namespace analysis {
             std::map<std::string,TH2F *> h2_btageff_;
             std::string btageff_flavour_;
             std::string btageff_algo_;
+            
+            std::shared_ptr<BTagCalibration> btagcalib_;
+            std::shared_ptr<BTagCalibrationReader> btagcalibread_;
+            
+            std::shared_ptr<JetResolutionInfo> jerinfo_;
+            
+            // pileup weight
+            std::shared_ptr<PileupWeight> puweights_;
+	    
+	    // muonID weight
+	    std::shared_ptr<MuonIdWeight> muonIDweights_;
 
 
             std::map<std::string, double> xsections_;
@@ -186,6 +224,8 @@ namespace analysis {
             double genWeight_;
             double genScale_;
             PDF    pdf_;
+            
+            double rho_;
 
             int nevents_;
 
@@ -232,6 +272,7 @@ namespace analysis {
       template <class Object>
       std::shared_ptr< PhysicsObjectTree<Object> >  Analysis::addTree(const std::string & unique_name, const std::string & path)
       {
+         if ( path == "" || unique_name == "" ) return nullptr;
          this->treeInit_(unique_name,path);
          t_any_[unique_name] = std::shared_ptr< PhysicsObjectTree<Object> > ( new PhysicsObjectTree<Object>(tree_[unique_name], unique_name) );
          std::string type = boost::core::demangle(typeid(Object).name());
@@ -301,6 +342,7 @@ namespace analysis {
       template <class Object1, class Object2>
       void Analysis::match(const std::string & collection, const std::string & match_collection, const float & deltaR)
       {
+         if ( match_collection == "" ) return;
          auto o1 = boost::any_cast< std::shared_ptr< Collection<Object1> > > (c_any_[collection]);
          auto o2 = boost::any_cast< std::shared_ptr< Collection<Object2> > > (c_any_[match_collection]);
          o1->matchTo(o2->vectorCandidates(),o2->name(), deltaR);
@@ -347,6 +389,7 @@ namespace analysis {
       inline double Analysis::genWeight()   { return genWeight_; }
       inline double Analysis::genScale()    { return genScale_;  }
       inline PDF    Analysis::pdf()         { return pdf_;       }
+      inline double Analysis::rho()         { return rho_; }
       
       inline void Analysis::btagEfficienciesAlgo(const std::string & algo )      { btageff_algo_    = algo; }
       inline void Analysis::btagEfficienciesFlavour(const std::string & flavour) { btageff_flavour_ = flavour; }

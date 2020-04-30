@@ -4,3 +4,9 @@ __init__.py
 .#*
 #*#
 *~
+._*
+.ipynb_checkpoints
+ntuples
+calibrations
+tmp
+scratch*

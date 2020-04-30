@@ -22,6 +22,9 @@ std::string inputlist_;
 std::string outputRoot_;
 std::string json_;
 
+int seed_;
+std::string seedfile_;
+
 //
 bool matchonoff_;
 float matchonoffdrmax_;
@@ -60,6 +63,13 @@ int l1tjetsrefnmin_;
 std::vector<float> l1tjetsrefptmin_;
 std::vector<float> l1tjetsrefetamax_;
 
+// btag SF csv file
+std::string btagsf_;
+
+// JER resolution and scale factors from txt file
+std::string jerpt_;
+std::string jersf_;
+
 
 // muons
 
@@ -94,10 +104,11 @@ float dphimin_;
 float ptimbalmax_;
 
 std::string btagalgo_;
+std::string btagwp_;
 float btagwploose_;
 float btagwpmedium_;
 float btagwptight_;
-float btagwp_;
+//float btagwp_;
 float nonbtagwp_;
 
 
@@ -124,7 +135,12 @@ std::string l1tjetsCol_;
 std::string l1tmuonsCol_; 
 std::string triggerCol_;
 std::string genParticleCol_;
+std::string genjetsCol_;
 std::string triggerObjDir_;
+
+//Prescale across eras
+std::vector<float> prescaleEra_;
+
 
 int macro_config(int argc, char * argv[])
 {
@@ -145,6 +161,11 @@ int macro_config(int argc, char * argv[])
          ("runMax",po::value <int> (&runmax_)->default_value(-1), "Minimum run number")
          ("output",po::value <std::string> (&outputRoot_)->default_value("histograms.root"),"Output root file")
          ("json",po::value <std::string> (&json_)->default_value("no_json.txt"),"JSON file for data")
+         ("seedFile",po::value <std::string> (&seedfile_)->default_value("seed.txt"),"File containing a seed value for random number generator")
+         ("seed",po::value <int> (&seed_)->default_value(1), "Seed value for random number generator")
+         ("btagSF",po::value <std::string> (&btagsf_)->default_value("DeepCSV.csv"),"b-tagging scale factor in CSV format")
+         ("jerPT",po::value <std::string> (&jerpt_)->default_value("JERPT.txt"),"JER pt resolution in txt format")
+         ("jerSF",po::value <std::string> (&jersf_)->default_value("JERSF.txt"),"JER scale factor in txt format")
 //      
          ("nJetsMin",po::value <int> (&njetsmin_)->default_value(0),"Minimum number of jets")
          ("nJetsMax",po::value <int> (&njetsmax_)->default_value(100),"Maximum number of jets")
@@ -153,7 +174,7 @@ int macro_config(int argc, char * argv[])
          ("jetsPtMax", po::value<std::vector<float> >(&jetsptmax_)->multitoken(),"Maximum pt of the jets")
          ("jetsEtaMax", po::value<std::vector<float> >(&jetsetamax_)->multitoken(),"Maximum |eta| of the jets")
          ("jetsBtagMin", po::value<std::vector<float> >(&jetsbtagmin_)->multitoken(),"Minimum btag of the jets; if < 0 -> reverse btag")
-         ("jetsId",po::value <std::string> (&jetsid_)->default_value("LOOSE"),"Jets id criteria for all jets")
+         ("jetsId",po::value <std::string> (&jetsid_)->default_value("TIGHT"),"Jets id criteria for all jets")
          
          ("l1tJetsNMin",po::value <int> (&l1tjetsnmin_)->default_value(0),"Minimum number of L1T jets")
          ("l1tJetsPtMin", po::value<std::vector<float> >(&l1tjetsptmin_)->multitoken(),"Mimium pt of the L1T jets")
@@ -207,11 +228,12 @@ int macro_config(int argc, char * argv[])
          ("triggerObjectsMuons", po::value<std::vector<std::string> >(&triggerObjectsMuons_)->multitoken(),"Trigger objects for muons")
 //      
          ("btagAlgorithm",po::value <std::string> (&btagalgo_)->default_value("csvivf"),"BTag algorithm")
+         ("btagWorkingPoint",po::value <std::string> (&btagwp_)->default_value("tight"),"BTag working point")
          ("btagWPLoose",po::value <float> (&btagwploose_)->default_value(0.46),"BTag working point LOOSE")
          ("btagWPMedium",po::value <float> (&btagwpmedium_)->default_value(0.84),"BTag working point MEDIUM")
          ("btagWPTight",po::value <float> (&btagwptight_)->default_value(0.92),"BTag working point TIGHT")
 //         
-         ("btagWP",po::value <float> (&btagwp_)->default_value(0.8484),"Btag working point")
+//         ("btagWP",po::value <float> (&btagwp_)->default_value(0.8484),"Btag working point")
          ("nonbtagWP",po::value <float> (&nonbtagwp_)->default_value(0.46),"non-Btag working point")
          
 //
@@ -227,12 +249,13 @@ int macro_config(int argc, char * argv[])
          ("l1tJetsCollection",po::value <std::string> (&l1tjetsCol_)->default_value("l1tJets"),"Name of the L1T jets collection")
          ("l1tMuonsCollection",po::value <std::string> (&l1tmuonsCol_)->default_value("l1tMuons"),"Name of the L1T muons collection")
          ("genParticleCollection",po::value <std::string> (&genParticleCol_)->default_value("prunedGenParticles"),"Name of the gen particle collection")
+         ("genjetsCollection",po::value <std::string> (&genjetsCol_)->default_value("slimmedGenJets"),"Name of the gen jets collection")
 
          ("triggerResultsCollection",po::value <std::string> (&triggerCol_)->default_value("TriggerResults"),"Name of the trigger results collection")
          ("triggerObjectsDirectory",po::value <std::string> (&triggerObjDir_)->default_value("slimmedPatTrigger"),"Name of the trigger objects directory")
-         ("collectionsTreePath",po::value <std::string> (&treePath_)->default_value("Events"),"Name of the tree path for the event collections.");
-         
-         
+         ("collectionsTreePath",po::value <std::string> (&treePath_)->default_value("Events"),"Name of the tree path for the event collections.")
+       	("prescaleEra",po::value <std::vector<float> >(&prescaleEra_)->multitoken(),"Prescale CR by # events in SR in each era");
+
 
          for ( int i = 0 ; i < 10 ; ++i )
          {
@@ -305,6 +328,15 @@ int macro_config(int argc, char * argv[])
             std::cout << "Config Error *** Muon maximum |eta| were not defined or the definition does not match the minimum number of muons" <<std::endl;
             return -1;
          }
+
+//         if ( (int)prescaleEra_.size() != 4 )
+//         {
+//            std::cout << "Config Error *** The prescales for the CR in each era were not defined or the definition does not match the number of eras" <<std::endl;
+//            return -1;
+//         }
+
+         std::transform(btagalgo_.begin(), btagalgo_.end(), btagalgo_.begin(), ::tolower);
+         std::transform(btagwp_.begin(), btagwp_.end(), btagwp_.begin(), ::tolower);
          
          
       }

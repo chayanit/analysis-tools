@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      L1TMuon
 // 
-/**\class L1TMuon L1TMuon.cc Analysis/Tools/src/L1TMuon.cc
+/**\class xxx L1TMuon.cc Analysis/Tools/src/L1TMuon.cc
 
  Description: [one line class summary]
 

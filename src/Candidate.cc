@@ -1,16 +1,3 @@
-/**\class Candidate Candidate.cc Analysis/Tools/src/Candidate.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Roberval Walsh Bastos Rangel
-//         Created:  Mon, 09 Sep 2015 09:24:08 GMT
-//
-//
-
 // system include files
 //
 #include <iostream>

@@ -6,7 +6,7 @@
 // Package:    Analysis/Tools
 // Class:      PhysicsObjectTree
 //
-/**\class PhysicsObjectTree PhysicsObjectTree.cc Analysis/Tools/src/PhysicsObjectTree.cc
+/**\class xxx PhysicsObjectTree.cc Analysis/Tools/src/PhysicsObjectTree.cc
 
  Description: [one line class summary]
 
@@ -80,6 +80,7 @@ namespace analysis {
             float cEmFrac_ [max_];
             float cMult_   [max_];
             float muFrac_  [max_];
+            float puppi_   [max_];
             bool  idLoose_ [max_];
             bool  idTight_ [max_];
             float jecUnc_  [max_];
@@ -91,7 +92,17 @@ namespace analysis {
             float puJetIdFullDisc_ [max_];
             int   puJetIdFullId_ [max_];
             
+            float bRegCorr_ [max_];
+            float bRegRes_  [max_];
+            
             bool isSimpleJet_;
+            bool hasPuppiInfo_;
+            bool hasQGLikelihood_;
+            bool hasBRegCorr_;
+            bool hasBRegRes_;
+            
+            bool hasRho_;
+            double rho_;
 
          private:
 
@@ -130,6 +141,13 @@ namespace analysis {
             int   pdgid_    [max_];
             int   status_   [max_];
             bool  higgs_dau_[max_];
+            int   indx_     [max_];
+            int   mo1_      [max_];
+            int   mo2_      [max_];
+            int   da1_      [max_];
+            int   da2_      [max_];
+            
+            bool gp_has_indx_;
 
          private:
 
@@ -177,7 +195,7 @@ namespace analysis {
            bool  isTrackerMuon_   [max_]; 
            bool  isLooseMuon_     [max_]; 
            bool  isMediumMuon_    [max_];
-	   bool  isTightMuon_     [max_];
+           bool  isTightMuon_     [max_];
 
            float validFraction_          [max_];
            float segmentCompatibility_   [max_]; 
@@ -185,6 +203,9 @@ namespace analysis {
            float chi2LocalPos_           [max_];
 
            float normChi2_  [max_];
+           
+           bool hasTightMuon_;
+           
          private:
 
       };

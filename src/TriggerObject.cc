@@ -1,15 +1,3 @@
-/**\class TriggerObject TriggerObject.cc Analysis/Tools/src/TriggerObject.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Rostyslav Shevchenko
-//         Created:  Fri, 08 Oct 2015 17:56:18 GMT
-//
-//
 
 // system include files
 //

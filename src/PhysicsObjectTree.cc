@@ -1,16 +1,3 @@
-/**\class PhysicsObjectTree PhysicsObjectTree.cc Analysis/Tools/src/PhysicsObjectTree.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Roberval Walsh Bastos Rangel
-//         Created:  Mon, 20 Oct 2014 14:24:08 GMT
-//
-//
-
 // system include files
 #include <iostream>
 //
@@ -73,6 +60,12 @@ Collection<Candidate>  PhysicsObjectTree<Candidate>::collection()
 PhysicsObjectTree<Jet>::PhysicsObjectTree(TChain * tree, const std::string & name) : PhysicsObjectTreeBase<Jet>(tree, name)
 {
    isSimpleJet_ = false;
+   hasPuppiInfo_ = false;
+   hasQGLikelihood_ = false;
+   hasBRegCorr_ = false;
+   hasBRegRes_ = false;
+   hasRho_ = false;
+   
 //   tree_  -> SetBranchAddress( "btag_csvivf", btag_    );
    int algos = 0;
    for ( auto & branch : branches_ )
@@ -109,9 +102,13 @@ PhysicsObjectTree<Jet>::PhysicsObjectTree(TChain * tree, const std::string & nam
       tree_  -> SetBranchAddress( "jerSFUp", jerSFUp_);
       tree_  -> SetBranchAddress( "jerResolution", jerResolution_);
       std::vector<std::string>::iterator it;
-      it = std::find(branches_.begin(),branches_.end(),"qgLikelihood")            ;  if ( it != branches_.end() ) tree_  -> SetBranchAddress( (*it).c_str() , qgLikelihood_ );
+      it = std::find(branches_.begin(),branches_.end(),"qgLikelihood")            ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , qgLikelihood_ ); hasQGLikelihood_ = true; }
       it = std::find(branches_.begin(),branches_.end(),"puJetIdFullDiscriminant") ;  if ( it != branches_.end() ) tree_  -> SetBranchAddress( (*it).c_str() , puJetIdFullDisc_ );
       it = std::find(branches_.begin(),branches_.end(),"puJetIdFullId")           ;  if ( it != branches_.end() ) tree_  -> SetBranchAddress( (*it).c_str() , puJetIdFullId_ );
+      it = std::find(branches_.begin(),branches_.end(),"id_puppi")                ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , puppi_ )       ; hasPuppiInfo_ = true; }
+      it = std::find(branches_.begin(),branches_.end(),"bjetRegCorr")             ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , bRegCorr_ )    ; hasBRegCorr_  = true; }
+      it = std::find(branches_.begin(),branches_.end(),"bjetRegRes")              ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , bRegRes_ )     ; hasBRegRes_   = true; }
+      it = std::find(branches_.begin(),branches_.end(),"Rho")                     ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , &rho_ )        ; hasRho_       = true; }
    }
    else
    {
@@ -127,6 +124,10 @@ PhysicsObjectTree<Jet>::~PhysicsObjectTree() {}
 // Member functions
 Collection<Jet>  PhysicsObjectTree<Jet>::collection()
 {
+//    std::string treename = (std::string)tree_->GetName();
+//    std::size_t foundPuppi = treename.find("Puppi");
+//    bool ispuppi = (foundPuppi != std::string::npos);
+   
    std::vector<Jet> jets;
    for ( int i = 0 ; i < n_ ; ++i )
    {
@@ -139,20 +140,44 @@ Collection<Jet>  PhysicsObjectTree<Jet>::collection()
       jet.flavour("Parton",partflavour_[i]);
       jet.flavour("Physics",physflavour_[i]);
       jet.jecUncert(jecUnc_[i]);
-      jet.id(nHadFrac_[i],
-             nEmFrac_[i] ,
-             nMult_[i]   ,
-             cHadFrac_[i],
-             cEmFrac_[i] ,
-             cMult_[i]   ,
-             muFrac_[i]  );
-      jet.JerResolution(jerResolution_[i]);
-      jet.JerSf(jerSF_[i]);
-      jet.JerSfUp(jerSFUp_[i]);
-      jet.JerSfDown(jerSFDown_[i]);
-      jet.qgLikelihood(qgLikelihood_[i]);
+      // for jet ID depends on Puppi!!!
+      if ( hasPuppiInfo_ )
+      {
+         jet.id(nHadFrac_[i],
+                nEmFrac_[i] ,
+                nMult_[i]   ,
+                cHadFrac_[i],
+                cEmFrac_[i] ,
+                cMult_[i]   ,
+                muFrac_[i]  ,
+                puppi_[i]   );
+      }
+      else
+      {
+         jet.id(nHadFrac_[i],
+                nEmFrac_[i] ,
+                nMult_[i]   ,
+                cHadFrac_[i],
+                cEmFrac_[i] ,
+                cMult_[i]   ,
+                muFrac_[i]  ,
+                -1.        );
+      }
+      jet.jerPtResolution(jerResolution_[i]);
+      jet.jerSF(jerSF_[i]);
+      jet.jerSFup(jerSFUp_[i]);
+      jet.jerSFdown(jerSFDown_[i]);
+      if ( hasQGLikelihood_ ) jet.qgLikelihood(qgLikelihood_[i]);
+      else                    jet.qgLikelihood(-10.);
       jet.pileupJetIdFullDiscriminant(puJetIdFullDisc_[i]);
       jet.pileupJetIdFullId(puJetIdFullId_[i]);
+      if ( hasBRegCorr_ )  jet.bRegCorr(bRegCorr_[i]);
+      else                 jet.bRegCorr(1);
+      if ( hasBRegRes_  )  jet.bRegRes (bRegRes_[i]);
+      else                 jet.bRegRes(1);
+      if ( hasRho_ )       jet.rho(rho_);
+      else                 jet.rho(-1);
+      
       jets.push_back(jet);
    }
    Collection<Jet> jetCollection(jets, name_);
@@ -164,9 +189,22 @@ Collection<Jet>  PhysicsObjectTree<Jet>::collection()
 // Constructors and destructor
 PhysicsObjectTree<GenParticle>::PhysicsObjectTree(TChain * tree, const std::string & name) : PhysicsObjectTreeBase<GenParticle>(tree, name)
 {
+   gp_has_indx_ = false;
+   
    tree_  -> SetBranchAddress( "pdg"   , pdgid_  );
    tree_  -> SetBranchAddress( "status", status_ );
    tree_  -> SetBranchAddress( "higgs_dau", higgs_dau_ );
+   
+  std::vector<std::string>::iterator it;
+  it = std::find(branches_.begin(),branches_.end(),"index")            ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , indx_ ); gp_has_indx_ = true; }
+  if ( gp_has_indx_ )
+  {
+     it = std::find(branches_.begin(),branches_.end(),"mother1")         ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , mo1_ ); }
+     it = std::find(branches_.begin(),branches_.end(),"mother2")         ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , mo2_ ); }
+     it = std::find(branches_.begin(),branches_.end(),"daughter1")       ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , da1_ ); }
+     it = std::find(branches_.begin(),branches_.end(),"daughter2")       ;  if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , da2_ ); }
+  }
+   
 }
 PhysicsObjectTree<GenParticle>::~PhysicsObjectTree() {}
 
@@ -180,6 +218,14 @@ Collection<GenParticle>  PhysicsObjectTree<GenParticle>::collection()
       p.pdgId(pdgid_[i]);
       p.status(status_[i]);
       p.higgsDaughter(higgs_dau_[i]);
+      if ( gp_has_indx_ )
+      {
+         p.index(indx_[i]);
+         p.mother(1,mo1_[i]);
+         p.mother(2,mo2_[i]);
+         p.daughter(1,da1_[i]);
+         p.daughter(2,da2_[i]);
+      }
       particles.push_back(p);
    }
    Collection<GenParticle> genPartCollection(particles, name_);
@@ -227,19 +273,27 @@ PhysicsObjectTree<Muon>::PhysicsObjectTree() : PhysicsObjectTreeBase<Muon>()
 }
 PhysicsObjectTree<Muon>::PhysicsObjectTree(TChain * tree, const std::string & name) : PhysicsObjectTreeBase<Muon>(tree, name)
 {
-  tree_  -> SetBranchAddress ("isPFMuon"      , isPFMuon_     ) ;      
-  tree_  -> SetBranchAddress ("isGlobalMuon"  , isGlobalMuon_ ) ;  
-  tree_  -> SetBranchAddress ("isTrackerMuon" , isTrackerMuon_) ; 
-  tree_  -> SetBranchAddress ("isLooseMuon"   , isLooseMuon_  ) ;   
-  tree_  -> SetBranchAddress ("isMediumMuon"  , isMediumMuon_ ) ;  
-  tree_  -> SetBranchAddress ("isTightMuon"   , isTightMuon_ ) ;  
+   hasTightMuon_ = false;
+   tree_  -> SetBranchAddress ("isPFMuon"      , isPFMuon_     ) ;      
+   tree_  -> SetBranchAddress ("isGlobalMuon"  , isGlobalMuon_ ) ;  
+   tree_  -> SetBranchAddress ("isTrackerMuon" , isTrackerMuon_) ; 
+   tree_  -> SetBranchAddress ("isLooseMuon"   , isLooseMuon_  ) ;   
+   tree_  -> SetBranchAddress ("isMediumMuon"  , isMediumMuon_ ) ;  
+//   tree_  -> SetBranchAddress ("isTightMuon"   , isTightMuon_ ) ;  
 
-  tree_  -> SetBranchAddress ("validFraction" ,validFraction_ ) ;
-  tree_  -> SetBranchAddress ("segmentCompatibility" , segmentCompatibility_) ;
-  tree_  -> SetBranchAddress ("trkKink" , trkKink_) ;      
-  tree_  -> SetBranchAddress ("chi2LocalPos" ,chi2LocalPos_) ;
+   tree_  -> SetBranchAddress ("validFraction" ,validFraction_ ) ;
+   tree_  -> SetBranchAddress ("segmentCompatibility" , segmentCompatibility_) ;
+   tree_  -> SetBranchAddress ("trkKink" , trkKink_) ;      
+   tree_  -> SetBranchAddress ("chi2LocalPos" ,chi2LocalPos_) ;
 
-  tree_  -> SetBranchAddress ("normChi2" , normChi2_) ;
+   tree_  -> SetBranchAddress ("normChi2" , normChi2_) ;
+  
+   // to preserve backward compatibility with old ntuples
+   std::vector<std::string>::iterator it;
+   it = std::find(branches_.begin(),branches_.end(),"isTightMuon") ; if ( it != branches_.end() ) { tree_  -> SetBranchAddress( (*it).c_str() , isTightMuon_ ); hasTightMuon_ = true; }
+  
+   if ( ! hasTightMuon_ ) std::cout << "*** warning *** PhysicsObjectTree<Muon> constructor: muon id tight is not available in this ntuple production, isIdTight -> false" << std::endl;
+  
 }
 PhysicsObjectTree<Muon>::~PhysicsObjectTree()
 {
@@ -255,8 +309,9 @@ Collection<Muon>  PhysicsObjectTree<Muon>::collection()
       muon.isGlobalMuon(isGlobalMuon_[i]) ;  
       muon.isTrackerMuon(isTrackerMuon_[i]) ; 
       muon.isLooseMuon(isLooseMuon_[i]) ;   
-      muon.isMediumMuon(isMediumMuon_[i]) ;  
-      muon.isTightMuon(isTightMuon_[i]) ;
+      muon.isMediumMuon(isMediumMuon_[i]) ;
+      if ( hasTightMuon_ ) muon.isTightMuon(isTightMuon_[i]) ;
+      else                 muon.isTightMuon(false) ;
 
       muon.validFraction(validFraction_[i]) ;
       muon.segmentCompatibility(segmentCompatibility_[i]) ;

@@ -8,6 +8,7 @@
 #include "Analysis/Tools/interface/RooFitUtils.h"
 
 namespace analysis {
+namespace tools {
 
 template<> RooRealVar* GetFromRooWorkspace<RooRealVar>(RooWorkspace& w, const std::string& name){
 	/*
@@ -59,4 +60,5 @@ template RooAbsPdf* GetFromRooWorkspace<RooAbsPdf>(RooWorkspace& w, const std::s
 template RooDataSet* GetFromRooWorkspace<RooDataSet>(RooWorkspace& w, const std::string& name);
 template RooAbsData* GetFromRooWorkspace<RooAbsData>(RooWorkspace& w, const std::string& name);
 template RooFormulaVar* GetFromRooWorkspace<RooFormulaVar>(RooWorkspace& w, const std::string& name);
+}
 } /* namespace analysis */

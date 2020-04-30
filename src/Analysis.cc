@@ -1,16 +1,4 @@
-/**\class Analysis Analysis.cc Analysis/Tools/src/Analysis.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Roberval Walsh Bastos Rangel
-//         Created:  Mon, 20 Oct 2014 14:24:08 GMT
-//
-//
-
+#include "Analysis/Tools/interface/Analysis.h"
 // system include files
 #include <iostream>
 #include <fstream>
@@ -18,18 +6,17 @@
 //
 // user include files
 #include "TKey.h"
-#include "Analysis/Tools/interface/Analysis.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-using namespace analysis;
-using namespace analysis::tools;
-
 //
 // class declaration
 //
+
+using namespace analysis;
+using namespace analysis::tools;
 
 //
 // constructors and destructor
@@ -69,6 +56,7 @@ Analysis::Analysis(const std::string & inputFilelist, const std::string & evtinf
    it = std::find(branches.begin(),branches.end(),"pdfx1");        if ( it != branches.end() ) t_event_  -> SetBranchAddress( (*it).c_str(), &pdf_.x.first);
    it = std::find(branches.begin(),branches.end(),"pdfx2");        if ( it != branches.end() ) t_event_  -> SetBranchAddress( (*it).c_str(), &pdf_.x.second);
    
+   it = std::find(branches.begin(),branches.end(),"rho");          if ( it != branches.end() ) t_event_  -> SetBranchAddress( (*it).c_str(), &rho_);
    
 //   t_event_ -> SetBranchAddress("nPileup", &n_pu_);
 //   t_event_ -> SetBranchAddress("nTruePileup", &n_true_pu_);
@@ -171,7 +159,7 @@ void Analysis::treeInit_(const std::string & unique_name, const std::string & pa
 // =============== Method for Trigger Results=================
 // ===========================================================
 
-void Analysis::triggerResults(const std::string & path)
+bool Analysis::triggerResults(const std::string & path)
 {
    t_triggerResults_  = new TChain(path.c_str());
    int ok = t_triggerResults_ -> AddFileInfoList(fileList_);
@@ -179,7 +167,7 @@ void Analysis::triggerResults(const std::string & path)
    if ( ok == 0 )
    {
       std::cout << "tree does not exist" << std::endl;
-      return;
+      return false;
    }
    TObjArray * triggerBranches = t_triggerResults_ -> GetListOfBranches();
    for ( int i = 0 ; i < triggerBranches->GetEntries() ; ++i )
@@ -196,10 +184,12 @@ void Analysis::triggerResults(const std::string & path)
          t_triggerResults_ -> SetBranchAddress(branch.c_str(), &triggerResults_[branch]);
       }
    }
+   return true;
 }
 
 bool Analysis::triggerResult(const std::string & trig)
 {
+   if ( trig == "" ) return true;
    if ( t_triggerResults_ == NULL ) return false;
    return triggerResults_[trig];
 }
@@ -226,14 +216,15 @@ std::map<std::string,int> Analysis::triggerPrescale(const std::vector<std::strin
 // ===========================================================
 // ===========================================================
 // ------------ methods called for metadata  ------------
-void Analysis::crossSections(const std::string & path)
+int Analysis::crossSections(const std::string & path)
 {
+   if ( path == "" ) return -2;
    t_xsection_  = new TChain(path.c_str());
    int ok = t_xsection_ -> AddFileInfoList(fileList_);
    if ( ok == 0 )
    {
       std::cout << "tree does not exist" << std::endl;
-      return;
+      return -1;
    }
    TObjArray * xsecBranches = t_xsection_->GetListOfBranches();
    for ( int i = 0 ; i < xsecBranches->GetEntries() ; ++i )
@@ -244,6 +235,7 @@ void Analysis::crossSections(const std::string & path)
       t_xsection_ -> SetBranchAddress(branch.c_str(), &xsections_[branch]);
    }
    t_xsection_ -> GetEntry(0);
+   return 0;
 }
 
 double Analysis::crossSection()
@@ -420,57 +412,6 @@ bool Analysis::selectJson()
     return isGood;
 }
 
-// OLD JSON selection
-
-// void Analysis::processJsonFile(const std::string & fileName)
-// {
-// 	std::string scriptName = "source $CMSSW_BASE/src/Analysis/Tools/interface/strip.sh ";
-// 	std::system((scriptName + fileName).c_str());
-// 	const std::string modifidedJsonFileName("temp");
-//     std::ifstream fileStream(modifidedJsonFileName, std::ifstream::in);
-//     if (!fileStream.good()) 
-//     {
-//     	std::cerr<<"Error in Analysis.cc! Cannot find file with name: "<< fileName <<"\n...break\n"<<std::endl;
-//         exit(12);
-//     }
-//     // Loop over all lines in ccFile
-//     int checker = 0;
-//     while(fileStream.good())
-//     {
-//     	// Read input File
-//     	std::string line;
-//     	std::getline(fileStream, line);
-//     	// Loop over words in cc-File line and fill vWord
-//     	std::vector<std::string> vWord;
-//     	std::string word;
-//     	for (std::stringstream ss(line); ss >> word; )
-//     	{
-//     	    vWord.push_back(word);
-//     	}
-//             goodLumi_[checker] = vWord;
-//             checker ++;
-//     }
-// }
-// 
-// bool Analysis::selectJson()
-// {
-// 	bool lumi = false;
-//     for( std::map<int, std::vector<std::string> >::iterator it = goodLumi_.begin(); it != --goodLumi_.end(); ++it)
-//     {
-//       if(std::stoi(it->second.at(0)) == run_)
-//       {
-//       	for(size_t lumiIt = 1; lumiIt < it->second.size()-1;  lumiIt = lumiIt + 2)
-//       	{
-//       		int lower = std::stoi(it->second.at(lumiIt));
-//       		int bigger = std::stoi(it->second.at(lumiIt+1));
-//       		if(lumi_ >= lower && lumi_ <= bigger ) lumi = true;
-//       	}
-//       }
-//       else continue;
-//     }
-//     return lumi;
-// }
-
 
 void Analysis::addBtagEfficiencies(const std::string & filename)
 {
@@ -544,6 +485,70 @@ void triggerNames(std::string &trueTriggerNames,const char *myTriggerNames, TTre
 	
 }
 */
+      
+std::shared_ptr<JetResolutionInfo> Analysis::jetResolutionInfo(const std::string & f_jer, const std::string & f_jersf)
+{
+   JetResolution res = JetResolution(f_jer);
+   JetResolutionScaleFactor sf = JetResolutionScaleFactor(f_jersf);
+   jerinfo_ = std::make_shared<JetResolutionInfo>(JetResolutionInfo{res,sf});
+   return jerinfo_;
+}
+      
+std::shared_ptr<PileupWeight> Analysis::pileupWeights(const std::string & f_pu)
+{
+   puweights_ = std::make_shared<PileupWeight>(PileupWeight(f_pu));
+   return puweights_;
+}
+
+      
+std::shared_ptr<MuonIdWeight> Analysis::muonIDWeights(const std::string & f_muID )
+{
+   muonIDweights_ = std::make_shared<MuonIdWeight>(MuonIdWeight(f_muID));
+   return muonIDweights_;
+}
+
+      
+std::shared_ptr<BTagCalibrationReader> Analysis::btagCalibration(const std::string & tagger,
+                                const std::string & filename,
+                                const std::string & wp,
+                                const std::string & sysType,
+                                const std::vector<std::string> & otherSysTypes)
+{
+   std::string wps = wp;
+   std::transform(wps.begin(), wps.end(), wps.begin(), ::tolower);
+   
+   BTagEntry::OperatingPoint op = BTagEntry::OP_MEDIUM;
+   if ( wps == "loose" )    op = BTagEntry::OP_LOOSE;
+   if ( wps == "medium" )   op = BTagEntry::OP_MEDIUM;
+   if ( wps == "tight" )    op = BTagEntry::OP_TIGHT;
+   if ( wps == "reshape" )  op = BTagEntry::OP_RESHAPING;
+   
+   btagcalib_     = std::shared_ptr<BTagCalibration>      ( new BTagCalibration(tagger,filename));
+   btagcalibread_ = std::shared_ptr<BTagCalibrationReader>( new BTagCalibrationReader(op,sysType,otherSysTypes) );
+   
+   
+   btagcalibread_ -> load(*btagcalib_,             // calibration instance
+                     BTagEntry::FLAV_B,           // btag flavour - B
+                     "comb");                     // measurement type   
+   
+   btagcalibread_ -> load(*btagcalib_,             // calibration instance
+                     BTagEntry::FLAV_C,           // btag flavour - C
+                     "comb");                     // measurement type   
+   
+   btagcalibread_ -> load(*btagcalib_,             // calibration instance
+                     BTagEntry::FLAV_UDSG,        // btag flavour - UDSG
+                     "incl");                     // measurement type   
+   
+   
+   return btagcalibread_;
+   
+}
+      
+
+std::shared_ptr<BTagCalibrationReader> Analysis::btagCalibration()
+{
+   return btagcalibread_;
+}
 
 std::string Analysis::fileName()
 {
@@ -552,3 +557,16 @@ std::string Analysis::fileName()
    return filename ;
 }
 
+
+int Analysis::seed(const std::string & name)
+{
+   int seed = 1;
+   std::ifstream f(name.c_str(),std::ios_base::in);
+   if ( ! f.good() )   return -1;
+   
+   f >> seed;
+   f.close();
+   if ( seed < 1 )     return -1;
+   
+   return seed;
+}
