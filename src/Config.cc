@@ -26,6 +26,7 @@ Config::Config()
 // Main constructor
 Config::Config(int argc, char ** argv) : opt_cmd_("Options"), opt_cfg_("Configuration")
 {
+   std::string toolspath = Form("%s/src/Analysis/Tools",getenv("CMSSW_BASE"));
    std::string datapath = Form("%s/src/Analysis/Tools/data",getenv("CMSSW_BASE"));
    argc_ = argc;
    argv_ = argv;
@@ -98,13 +99,13 @@ Config::Config(int argc, char ** argv) : opt_cmd_("Options"), opt_cfg_("Configur
       opt_cfg_.add_options()                                                                                                              
          ("BTag.wp"                      , po::value <std::vector<std::string> > (&jetsbtagwp_)      -> multitoken()                      ,"Jets btag minimum (with '-' means maximum)")
          ("BTag.algorithm"               , po::value <std::string>               (&btagalgo_)        -> default_value("csvivf")           ,"BTag algorithm")
-         ("BTag.nonBtagWP"               , po::value <std::string>               (&nonbtagwp_)       -> default_value("")                 ,"non-Btag working point")
          ("BTag.loose"                   , po::value <float>                     (&btagwploose_)     -> default_value(-10000)             ,"BTag working point LOOSE")
          ("BTag.medium"                  , po::value <float>                     (&btagwpmedium_)    -> default_value(-10000)             ,"BTag working point MEDIUM")
          ("BTag.tight"                   , po::value <float>                     (&btagwptight_)     -> default_value(-10000)             ,"BTag working point TIGHT")
          ("BTag.user"                    , po::value <float>                     (&btagwpxxx_)       -> default_value(-10000)             ,"BTag working point USER-defined")
          ("BTag.nMin"                    , po::value <int>                       (&nbjetsmin_)       -> default_value(-1)                  ,"Minimum number of btgaged jets")
-         ("BTag.nonBtagJet"              , po::value <int>                       (&nonbtagjet_)      -> default_value(-1)                 ,"non-Btag Jet");
+         ("BTag.revWP"                   , po::value <std::string>               (&revbtagwp_)       -> default_value("")                 ,"non-Btag working point")
+         ("BTag.revBJet"                 , po::value <int>                       (&revbtagjet_)      -> default_value(-1)                 ,"non-Btag Jet");
                                                                                                                                           
       // muons                                                                                                                            
       opt_cfg_.add_options()                                                                                                              
@@ -145,6 +146,8 @@ Config::Config(int argc, char ** argv) : opt_cmd_("Options"), opt_cfg_("Configur
                                                                                                                                           
       // general                                                                                                                          
       opt_cfg_.add_options()                                                                                                              
+         ("User.doTree"                  , po::value <bool>                      (&do_tree_)         -> default_value(false)              , "Flag for output")
+         ("User.override"                , po::value <bool>                      (&override_)        -> default_value(false)              , "Flag to be used to override procedure, e.g. a selection")      
          ("User.dRMin"                   , po::value <float>                     (&drmin_)           -> default_value(-1.)                , "Minimum delta R between candidates")
          ("User.dRMax"                   , po::value <float>                     (&drmax_)           -> default_value(-1.)                , "Maximum delta R between candidates")
          ("User.dEtaMax"                 , po::value <float>                     (&detamax_)         -> default_value(-1.)                , "Maximum delta eta between candidates")
@@ -209,12 +212,6 @@ Config::Config(int argc, char ** argv) : opt_cmd_("Options"), opt_cfg_("Configur
          ("eras", po::value<std::vector<std::string> >(&eras_)->multitoken(),"Era of data taking");
          
       
-      // analysis control
-      opt_cfg_.add_options()
-         ("doTree",po::value <bool> (&do_tree_)->default_value(false),"Flag for output")
-         ("override",po::value <bool> (&override_)->default_value(true),"Flag to be used to override procedure, e.g. a selection");
-      
-      
             
       po::variables_map vm; 
       try
@@ -239,6 +236,10 @@ Config::Config(int argc, char ** argv) : opt_cmd_("Options"), opt_cfg_("Configur
          po::notify(vm);
          boost::algorithm::to_lower(jetsid_);
          std::transform(btagalgo_.begin(), btagalgo_.end(), btagalgo_.begin(), ::tolower);
+         
+//         inputlist_ = Form("%s/test/%s", toolspath.c_str(), inputlist_.c_str());
+         
+         if ( json_     != "no_json.txt" ) json_ = Form("%s/%s", datapath.c_str(), json_.c_str());
          if ( jerptres_ != "" )  jerptres_ = Form("%s/%s", datapath.c_str(), jerptres_.c_str());
          if ( jersf_    != "" )  jersf_    = Form("%s/%s", datapath.c_str(), jersf_.c_str()   );
          if ( btagsf_   != "" )  btagsf_   = Form("%s/%s", datapath.c_str(), btagsf_.c_str()  );
@@ -367,8 +368,8 @@ std::vector<float> Config::jetsBtagProbC()      const { return jetsbtagprobc_; }
 std::vector<float> Config::jetsBtagProbG()      const { return jetsbtagprobg_; }
 std::vector<float> Config::jetsBtagProbLight()  const { return jetsbtagproblight_; }
 bool               Config::bRegression()        const { return bregression_; }
-std::string        Config::nonBtagWP()          const { return nonbtagwp_; }
-int                Config::nonBtagJet()         const { return nonbtagjet_; }
+std::string        Config::revBtagWP()          const { return revbtagwp_; }
+int                Config::revBtagJet()         const { return revbtagjet_; }
 bool               Config::useJetsExtendedFlavour() const { return usejetsextflv_; }
 bool               Config::doDijet()            const { return dodijet_ ; }
 int                Config::nBJetsMin()          const { return nbjetsmin_; }
@@ -445,8 +446,7 @@ float Config::discriminatorMinAI() const { return disc_min_ai_; }
 float Config::efficiencyMinAI()    const { return eff_min_ai_ ; }
 
 // output tree
-bool Config::doTree() const { return do_tree_; 
-}
+bool Config::doTree() const { return do_tree_; }
 
 // User options
 int   Config::prescale()   const { return prescale_; }

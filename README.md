@@ -1,6 +1,9 @@
 # Analysis/Tools package
 
-**Core analysis framework of the DESY CMS Higgs -> bb group**
+**Core Analysis Framework of the DESY CMS Higgs -> bb group**
+
+See also the code documentation [Doxygen](https://www.desy.de/~walsh/analysis-framework/doxygen/pro) page
+
 
 :warning: This package is supposed to contain only general codes to be used for analysis.
 Codes for specific analysis must be developed in dedicated packages/repositories, e.g.

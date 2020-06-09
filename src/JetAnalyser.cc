@@ -700,7 +700,7 @@ bool JetAnalyser::selectionBJet(const int & r )
 {
    if ( config_->nJetsMin() < config_->nBJetsMin() || config_->nBJetsMin() < 1 || r > config_->nBJetsMin() ||  (int)(config_->jetsBtagWP()).size() < config_->nBJetsMin() ) return true;
    
-   if ( ! config_->signalRegion() && r == config_->nonBtagJet() ) return this->selectionNonBJet(r);
+   if ( ! config_->signalRegion() && r == config_->revBtagJet() ) return this->selectionNonBJet(r);
       
    int j = r-1;
    
@@ -722,7 +722,7 @@ bool JetAnalyser::selectionNonBJet(const int & r )
 {
    int j = r-1;
 
-   if ( config_->btagWP(config_->nonBtagWP()) < 0 ) return true; // there is no selection here, so will not update the cutflow
+   if ( config_->btagWP(config_->revBtagWP()) < 0 ) return true; // there is no selection here, so will not update the cutflow
 
    ++ cutflow_;
    
@@ -733,10 +733,10 @@ bool JetAnalyser::selectionNonBJet(const int & r )
    }
   
    // jet  non btag
-   if ( btag(*selectedJets_[j],config_->btagAlgorithm()) > config_->btagWP(config_->nonBtagWP()) ) return false;
+   if ( btag(*selectedJets_[j],config_->btagAlgorithm()) > config_->btagWP(config_->revBtagWP()) ) return false;
    
    if ( std::string(h1_["cutflow"] -> GetXaxis()-> GetBinLabel(cutflow_+1)) == "" ) 
-      h1_["cutflow"] -> GetXaxis()-> SetBinLabel(cutflow_+1,Form("Jet %d: %s btag < %6.4f (%s) [reverse btag]",r,config_->btagAlgorithm().c_str(),config_->btagWP(config_->nonBtagWP()),config_->nonBtagWP().c_str()));
+      h1_["cutflow"] -> GetXaxis()-> SetBinLabel(cutflow_+1,Form("Jet %d: %s btag < %6.4f (%s) [reverse btag]",r,config_->btagAlgorithm().c_str(),config_->btagWP(config_->revBtagWP()),config_->revBtagWP().c_str()));
    
    h1_["cutflow"] -> Fill(cutflow_,weight_);
    
@@ -1038,7 +1038,7 @@ float JetAnalyser::actionApplyBtagSF(const int & r, const bool & global_weight)
 {
    float sf = 1.;
    if ( ! config_-> isMC() || config_->btagScaleFactors() == "" ) return sf;  // will not apply btag SF
-   if ( ! config_->signalRegion() && r == config_->nonBtagJet() ) return sf;
+   if ( ! config_->signalRegion() && r == config_->revBtagJet() ) return sf;
    
    int j = r-1;
    ++ cutflow_;
@@ -1064,7 +1064,7 @@ float JetAnalyser::getBtagSF(const int & r)
    float sf = 1.;
    int j = r-1;
    if ( ! config_-> isMC() || config_->btagScaleFactors() == "" ) return sf;  // will not apply btag SF
-   if ( ! config_->signalRegion() && r == config_->nonBtagJet() ) return sf;
+   if ( ! config_->signalRegion() && r == config_->revBtagJet() ) return sf;
    
    if ( config_->jetsBtagWP()[j] != "xxx" )  sf = this->btagSF(r,config_->jetsBtagWP()[j]).nominal;
    

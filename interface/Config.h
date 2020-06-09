@@ -120,8 +120,8 @@ namespace analysis {
             std::vector<float> jetsBtagProbG() const;
             std::vector<float> jetsBtagProbLight() const;
             bool bRegression() const;
-            std::string nonBtagWP()  const;
-            int   nonBtagJet() const;
+            std::string revBtagWP()  const;
+            int   revBtagJet() const;
             bool useJetsExtendedFlavour() const;
             bool doDijet() const;
             bool doDijetFlavour() const;
@@ -318,8 +318,8 @@ namespace analysis {
 
 
             std::vector<std::string> jetsbtagwp_;
-            std::string nonbtagwp_;
-            int nonbtagjet_;
+            std::string revbtagwp_;
+            int revbtagjet_;
             // cuts on the probabilities
             std::vector<float> jetsbtagprobb_;
             std::vector<float> jetsbtagprobbb_;

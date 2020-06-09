@@ -51,10 +51,19 @@ bool Analyser::event(const int & i)
    
    if ( config_->runmin_ > 0 && analysis_->run() < config_->runmin_ ) return false;
    if ( config_->runmax_ > 0 && analysis_->run() > config_->runmax_ ) return false;
-   
-   if (! config_->isMC() ) ok = analysis_->selectJson();
-   
-   if ( ! ok ) return false;
+
+   if (! config_->isMC() ) 
+   {
+       auto json = basename(config_->json_);
+       ++cutflow_;
+       if ( std::string(h1_["cutflow"] -> GetXaxis()-> GetBinLabel(cutflow_+1)) == "" )
+       {
+         h1_["cutflow"] -> GetXaxis()-> SetBinLabel(cutflow_+1,Form("Certified data: %s",json.c_str()));
+       }
+       ok = analysis_->selectJson();
+       if ( ! ok ) return false;
+       h1_["cutflow"] -> Fill(cutflow_,weight_);
+   }
    
    if ( this->genParticlesAnalysis() )
    {
@@ -75,10 +84,11 @@ bool Analyser::event(const int & i)
       }
       h1_["cutflow"] -> Fill(cutflow_,weight_);
    }
-   
+
    analysisWithJets();
    analysisWithMuons();
       
+    
    return ok;
    
 }
